@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "31975231094",
+    "project_id": "rideshareultimate-315c9",
+    "storage_bucket": "rideshareultimate-315c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:31975231094:android:6d8de64c4e393896479957",
+        "android_client_info": {
+          "package_name": "edu.uga.cs.rideshareultimate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZJvFf6pkNBC0_QK87l9AJLckkwE_sE7k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
