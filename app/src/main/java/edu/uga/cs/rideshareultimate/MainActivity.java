@@ -44,10 +44,16 @@ public class MainActivity extends AppCompatActivity {
         tvWelcomeUser = findViewById(R.id.tvWelcomeUser);
         tvRidePoints = findViewById(R.id.tvRidePoints);
         Button btnLogOut = findViewById(R.id.btnLogOut);
+        Button btnPostRide = findViewById(R.id.button2);
 
         btnLogOut.setOnClickListener(v -> {
             mAuth.signOut();
             goToLogin();
+        });
+        //intent for posting rides page
+        btnPostRide.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, PostRidesActivity.class);
+            startActivity(intent);
         });
     }
 
