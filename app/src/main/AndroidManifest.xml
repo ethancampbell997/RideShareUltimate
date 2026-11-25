@@ -36,6 +36,9 @@
         <activity
             android:name=".PostRideRequestActivity"
             android:exported="false" />
+        <activity
+            android:name=".ViewMyRidesActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
