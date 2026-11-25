@@ -135,9 +135,11 @@ public class PostRidesActivity extends AppCompatActivity {
         // Create Ride object
         Ride newRide = new Ride(
                 rideId,
+                "offer",
                 currentUser.getUid(),
                 null,
                 currentUser.getEmail(),
+                null,
                 startLocation,
                 endLocation,
                 pickupDateTime,

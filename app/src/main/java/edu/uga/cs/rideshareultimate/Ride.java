@@ -6,9 +6,11 @@ package edu.uga.cs.rideshareultimate;
  */
 public class Ride {
     private String rideId;
+    private String rideType;
     private String driverId;
     private String riderId;
     private String driverEmail;
+    private String riderEmail;
     private String startLocation;
     private String endLocation;
     private long pickupDateTime;
@@ -21,15 +23,17 @@ public class Ride {
     public Ride() {
     }
 
-    public Ride(String rideId, String driverId, String riderId,
-                String driverEmail, String startLocation,
+    public Ride(String rideId, String rideType, String driverId, String riderId,
+                String driverEmail, String riderEmail, String startLocation,
                 String endLocation, long pickupDateTime,
                 long postedDateTime, int availableSeats,
                 int cost, String description) {
         this.rideId = rideId;
+        this.rideType = rideType;
         this.driverId = driverId;
         this.riderId = riderId;
         this.driverEmail = driverEmail;
+        this.riderEmail = riderEmail;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
         this.pickupDateTime = pickupDateTime;
@@ -41,6 +45,13 @@ public class Ride {
 
     public String getRideId() {
         return rideId;
+    }
+    public String getRideType() {
+        return rideType;
+    }
+
+    public void setRideType(String rideType) {
+        this.rideType = rideType;
     }
 
     public void setRideId(String rideId) {
@@ -69,6 +80,13 @@ public class Ride {
 
     public void setDriverEmail(String driverEmail) {
         this.driverEmail = driverEmail;
+    }
+    public String getRiderEmail() {
+        return riderEmail;
+    }
+
+    public void setRiderEmail(String riderEmail) {
+        this.riderEmail = riderEmail;
     }
 
     public String getStartLocation() {

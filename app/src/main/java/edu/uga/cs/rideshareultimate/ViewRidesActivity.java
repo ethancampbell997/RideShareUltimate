@@ -61,8 +61,8 @@ public class ViewRidesActivity extends AppCompatActivity {
                 ridesList.clear();
                 for (DataSnapshot rideSnapshot : snapshot.getChildren()) {
                     Ride ride = rideSnapshot.getValue(Ride.class);
-
-                    if (ride != null) {
+                    //only displays if it's a ride offer, so no requests
+                    if (ride != null && "offer".equals(ride.getRideType())) {
 
                         String pickupDate = new SimpleDateFormat(
                                 "MMM d, yyyy 'at' h:mm a",
