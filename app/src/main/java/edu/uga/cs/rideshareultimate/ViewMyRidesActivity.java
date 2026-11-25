@@ -1,5 +1,6 @@
 package edu.uga.cs.rideshareultimate;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -27,6 +28,7 @@ public class ViewMyRidesActivity extends AppCompatActivity {
 
     private ListView ridesListView;
     private ArrayList<String> ridesList;
+    private ArrayList<String> rideIds;
     private ArrayAdapter<String> ridesAdapter;
 
     private DatabaseReference ridesRef;
@@ -40,6 +42,7 @@ public class ViewMyRidesActivity extends AppCompatActivity {
         ridesListView = findViewById(R.id.ridesListView);
 
         ridesList = new ArrayList<>();
+        rideIds = new ArrayList<>();
         ridesAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
@@ -51,6 +54,19 @@ public class ViewMyRidesActivity extends AppCompatActivity {
                 .getUid();
 
         ridesListView.setAdapter(ridesAdapter);
+        ridesListView.setOnItemClickListener((parent, view, position, id) -> {
+
+            String selectedRideId = rideIds.get(position);
+
+            Intent intent = new Intent(
+                    ViewMyRidesActivity.this,
+                    ManageRideActivity.class
+            );
+
+            intent.putExtra("rideId", selectedRideId);
+
+            startActivity(intent);
+        });
 
         ridesRef = FirebaseDatabase.getInstance().getReference("rides");
 
@@ -64,6 +80,7 @@ public class ViewMyRidesActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         ridesList.clear();
+                        rideIds.clear();
                         for (DataSnapshot rideSnapshot : snapshot.getChildren()) {
                             Ride ride = rideSnapshot.getValue(Ride.class);
                             //only displays if it's a ride offer, so no requests
@@ -86,6 +103,7 @@ public class ViewMyRidesActivity extends AppCompatActivity {
                                                 "\nDescription: " + ride.getDescription();
 
                                 ridesList.add(rideInfo);
+                                rideIds.add(ride.getRideId());
                             }
                         }
 

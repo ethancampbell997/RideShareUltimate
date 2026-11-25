@@ -39,6 +39,13 @@
         <activity
             android:name=".ViewMyRidesActivity"
             android:exported="false" />
+        <activity
+            android:name=".ManageRideActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EditRideActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
