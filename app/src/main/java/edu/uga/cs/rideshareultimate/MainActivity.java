@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         tvRidePoints = findViewById(R.id.tvRidePoints);
         Button btnLogOut = findViewById(R.id.btnLogOut);
         Button btnPostRide = findViewById(R.id.button2);
+        Button btnViewRides = findViewById(R.id.button3);
 
         btnLogOut.setOnClickListener(v -> {
             mAuth.signOut();
@@ -53,6 +54,10 @@ public class MainActivity extends AppCompatActivity {
         //intent for posting rides page
         btnPostRide.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, PostRidesActivity.class);
+            startActivity(intent);
+        });
+        btnViewRides.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ViewRidesActivity.class);
             startActivity(intent);
         });
     }
