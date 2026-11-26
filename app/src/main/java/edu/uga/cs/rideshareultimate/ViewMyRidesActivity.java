@@ -1,3 +1,4 @@
+
 package edu.uga.cs.rideshareultimate;
 
 import android.content.Intent;
@@ -6,12 +7,12 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -23,15 +24,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * view all rides that have been posted
- */
 public class ViewMyRidesActivity extends AppCompatActivity {
 
-    private ListView ridesListView;
-    private ArrayList<String> ridesList;
-    private ArrayList<String> rideIds;
-    private ArrayAdapter<String> ridesAdapter;
+    private ListView acceptedRidesListView;
+    private ListView unacceptedRidesListView;
+
+    private ArrayList<String> acceptedRidesList;
+    private ArrayList<String> unacceptedRidesList;
+
+    private ArrayList<String> acceptedRideIds;
+    private ArrayList<String> unacceptedRideIds;
+
+    private ArrayAdapter<String> acceptedRidesAdapter;
+    private ArrayAdapter<String> unacceptedRidesAdapter;
 
     private DatabaseReference ridesRef;
     private String currentUserId;
@@ -39,114 +44,241 @@ public class ViewMyRidesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_rides);
+        setContentView(R.layout.activity_view_my_rides);
 
-        ridesListView = findViewById(R.id.ridesListView);
+        acceptedRidesListView =
+                findViewById(R.id.acceptedRidesListView);
+
+        unacceptedRidesListView =
+                findViewById(R.id.unacceptedRidesListView);
 
         ActionBar actionBar = getSupportActionBar();
+
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        ridesList = new ArrayList<>();
-        rideIds = new ArrayList<>();
-        ridesAdapter = new ArrayAdapter<>(
+        FirebaseUser currentUser =
+                FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser == null) {
+            Toast.makeText(this,
+                    "You must be logged in.",
+                    Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        currentUserId = currentUser.getUid();
+
+        acceptedRidesList = new ArrayList<>();
+        unacceptedRidesList = new ArrayList<>();
+
+        acceptedRideIds = new ArrayList<>();
+        unacceptedRideIds = new ArrayList<>();
+
+        acceptedRidesAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
-                ridesList
+                acceptedRidesList
         );
 
-        currentUserId = FirebaseAuth.getInstance()
-                .getCurrentUser()
-                .getUid();
+        unacceptedRidesAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                unacceptedRidesList
+        );
 
-        ridesListView.setAdapter(ridesAdapter);
-        ridesListView.setOnItemClickListener((parent, view, position, id) -> {
+        acceptedRidesListView.setAdapter(acceptedRidesAdapter);
+        unacceptedRidesListView.setAdapter(unacceptedRidesAdapter);
 
-            String selectedRideId = rideIds.get(position);
+        acceptedRidesListView.setOnItemClickListener(
+                (parent, view, position, id) ->
+                        openRide(acceptedRideIds.get(position))
+        );
 
-            Intent intent = new Intent(
-                    ViewMyRidesActivity.this,
-                    ManageRideActivity.class
-            );
+        unacceptedRidesListView.setOnItemClickListener(
+                (parent, view, position, id) ->
+                        openRide(unacceptedRideIds.get(position))
+        );
 
-            intent.putExtra("rideId", selectedRideId);
+        ridesRef = FirebaseDatabase.getInstance()
+                .getReference("rides");
 
-            startActivity(intent);
-        });
-
-        ridesRef = FirebaseDatabase.getInstance().getReference("rides");
-
-        loadRides();
+        loadAcceptedRides();
+        loadUnacceptedRides();
     }
 
-    private void loadRides() {
-        //gets the rides ordered by the soonest pickupDateTime
+    /**
+     * Opens the selected ride.
+     */
+    private void openRide(String rideId) {
+
+        Intent intent = new Intent(
+                ViewMyRidesActivity.this,
+                ManageRideActivity.class
+        );
+
+        intent.putExtra("rideId", rideId);
+
+        startActivity(intent);
+    }
+
+    /**
+     * Loads rides where both the driver and rider have accepted.
+     */
+    private void loadAcceptedRides() {
+
         ridesRef.orderByChild("pickupDateTime")
                 .addValueEventListener(new ValueEventListener() {
+
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-                        ridesList.clear();
-                        rideIds.clear();
-                        for (DataSnapshot rideSnapshot : snapshot.getChildren()) {
-                            Ride ride = rideSnapshot.getValue(Ride.class);
-                            //only displays if it's a ride offer, so no requests
-                            if (ride != null &&
-                                    (currentUserId.equals(ride.getDriverId()) ||
-                                            currentUserId.equals(ride.getRiderId()))) {
 
-                                String pickupDate = new SimpleDateFormat(
-                                        "MMM d, yyyy 'at' h:mm a",
-                                        Locale.getDefault()
-                                ).format(new Date(ride.getPickupDateTime()));
+                        acceptedRidesList.clear();
+                        acceptedRideIds.clear();
 
-                                String rideInfo =
-                                        "From: " + ride.getStartLocation() +
-                                                "\nTo: " + ride.getEndLocation() +
-                                                "\nDriver: " + ride.getDriverEmail() +
-                                                "\nPickup: " + pickupDate +
-                                                "\nAvailable Seats: " + ride.getAvailableSeats() +
-                                                "\nCost: " + ride.getCost() + " ride points" +
-                                                "\nDescription: " + ride.getDescription();
+                        for (DataSnapshot rideSnapshot :
+                                snapshot.getChildren()) {
 
-                                ridesList.add(rideInfo);
-                                rideIds.add(ride.getRideId());
+                            Ride ride =
+                                    rideSnapshot.getValue(Ride.class);
+
+                            if (ride == null) {
+                                continue;
+                            }
+
+                            boolean isCurrentUserInvolved =
+                                    currentUserId.equals(ride.getDriverId()) ||
+                                            currentUserId.equals(ride.getRiderId());
+
+                            boolean hasDriver =
+                                    ride.getDriverId() != null &&
+                                            !ride.getDriverId().isEmpty();
+
+                            boolean hasRider =
+                                    ride.getRiderId() != null &&
+                                            !ride.getRiderId().isEmpty();
+
+                            if (isCurrentUserInvolved &&
+                                    hasDriver && hasRider) {
+
+                                acceptedRidesList.add(
+                                        formatRideInfo(ride)
+                                );
+
+                                acceptedRideIds.add(ride.getRideId());
                             }
                         }
 
-                        ridesAdapter.notifyDataSetChanged();
-
-                        if (ridesList.isEmpty()) {
-                            Toast.makeText(
-                                    ViewMyRidesActivity.this,
-                                    "No one has posted a ride yet!.",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
+                        acceptedRidesAdapter.notifyDataSetChanged();
                     }
+
                     @Override
                     public void onCancelled(DatabaseError error) {
 
                         Toast.makeText(
                                 ViewMyRidesActivity.this,
-                                "Error: " + error.getMessage(),
+                                "Error loading accepted rides: " +
+                                        error.getMessage(),
                                 Toast.LENGTH_LONG
                         ).show();
                     }
                 });
     }
+
+    /**
+     * Loads rides where the current user is involved,
+     * but either the driver or rider has not accepted yet.
+     */
+    private void loadUnacceptedRides() {
+
+        ridesRef.orderByChild("pickupDateTime")
+                .addValueEventListener(new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+
+                        unacceptedRidesList.clear();
+                        unacceptedRideIds.clear();
+
+                        for (DataSnapshot rideSnapshot :
+                                snapshot.getChildren()) {
+
+                            Ride ride =
+                                    rideSnapshot.getValue(Ride.class);
+
+                            if (ride == null) {
+                                continue;
+                            }
+
+                            boolean isCurrentUserInvolved =
+                                    currentUserId.equals(ride.getDriverId()) ||
+                                            currentUserId.equals(ride.getRiderId());
+
+                            boolean hasDriver =
+                                    ride.getDriverId() != null &&
+                                            !ride.getDriverId().isEmpty();
+
+                            boolean hasRider =
+                                    ride.getRiderId() != null &&
+                                            !ride.getRiderId().isEmpty();
+
+                            if (isCurrentUserInvolved &&
+                                    (!hasDriver || !hasRider)) {
+
+                                unacceptedRidesList.add(
+                                        formatRideInfo(ride)
+                                );
+
+                                unacceptedRideIds.add(ride.getRideId());
+                            }
+                        }
+
+                        unacceptedRidesAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+
+                        Toast.makeText(
+                                ViewMyRidesActivity.this,
+                                "Error loading unaccepted rides: " +
+                                        error.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
+    }
+
+    /**
+     * Formats ride information for display in either list.
+     */
+    private String formatRideInfo(Ride ride) {
+
+        String pickupDate = new SimpleDateFormat(
+                "MMM d, yyyy 'at' h:mm a",
+                Locale.getDefault()
+        ).format(new Date(ride.getPickupDateTime()));
+
+        return "From: " + ride.getStartLocation() +
+                "\nTo: " + ride.getEndLocation() +
+                "\nDriver: " + ride.getDriverEmail() +
+                "\nRider: " + ride.getRiderEmail() +
+                "\nPickup: " + pickupDate +
+                "\nAvailable Seats: " + ride.getAvailableSeats() +
+                "\nCost: " + ride.getCost() + " ride points" +
+                "\nDescription: " + ride.getDescription();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Implement Back button listener method.
-        // This method may be used for other actions from the ActionBar menu, if provided in the layout.
-        int id = item.getItemId();
 
-        // android.R.id.home is the built-in designation of the back button widget.
-        if( id == android.R.id.home ) {
+        if (item.getItemId() == android.R.id.home) {
             getOnBackPressedDispatcher().onBackPressed();
             return true;
         }
 
-        return super.onOptionsItemSelected( item );
+        return super.onOptionsItemSelected(item);
     }
 }
