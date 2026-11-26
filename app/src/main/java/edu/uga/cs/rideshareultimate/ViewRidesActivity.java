@@ -2,10 +2,12 @@
 package edu.uga.cs.rideshareultimate;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.TextView;
+import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -28,7 +30,7 @@ public class ViewRidesActivity extends AppCompatActivity {
     private ListView ridesListView;
     private ArrayList<String> ridesList;
     private ArrayAdapter<String> ridesAdapter;
-
+    private ArrayList<String> rideIds;
     private DatabaseReference ridesRef;
 
     @Override
@@ -37,8 +39,9 @@ public class ViewRidesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_rides);
 
         ridesListView = findViewById(R.id.ridesListView);
-
         ridesList = new ArrayList<>();
+        rideIds = new ArrayList<>();
+
         ridesAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
@@ -46,6 +49,20 @@ public class ViewRidesActivity extends AppCompatActivity {
         );
 
         ridesListView.setAdapter(ridesAdapter);
+
+        ridesListView.setOnItemClickListener((parent, view, position, id) -> {
+
+            String selectedRideId = rideIds.get(position);
+
+            Intent intent = new Intent(
+                    ViewRidesActivity.this,
+                    AcceptRideActivity.class
+            );
+
+            intent.putExtra("rideId", selectedRideId);
+
+            startActivity(intent);
+        });
 
         ridesRef = FirebaseDatabase.getInstance().getReference("rides");
 
@@ -59,10 +76,13 @@ public class ViewRidesActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 ridesList.clear();
+                rideIds.clear();
                 for (DataSnapshot rideSnapshot : snapshot.getChildren()) {
                     Ride ride = rideSnapshot.getValue(Ride.class);
                     //only displays if it's a ride offer, so no requests
-                    if (ride != null && "offer".equals(ride.getRideType())) {
+                    if (ride != null &&
+                            "offer".equals(ride.getRideType()) &&
+                            ride.getRiderId() == null) {
 
                         String pickupDate = new SimpleDateFormat(
                                 "MMM d, yyyy 'at' h:mm a",
@@ -79,6 +99,7 @@ public class ViewRidesActivity extends AppCompatActivity {
                                         "\nDescription: " + ride.getDescription();
 
                         ridesList.add(rideInfo);
+                        rideIds.add(ride.getRideId());
                     }
                 }
 
@@ -102,5 +123,19 @@ public class ViewRidesActivity extends AppCompatActivity {
                 ).show();
             }
         });
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Implement Back button listener method.
+        // This method may be used for other actions from the ActionBar menu, if provided in the layout.
+        int id = item.getItemId();
+
+        // android.R.id.home is the built-in designation of the back button widget.
+        if( id == android.R.id.home ) {
+            getOnBackPressedDispatcher().onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected( item );
     }
 }

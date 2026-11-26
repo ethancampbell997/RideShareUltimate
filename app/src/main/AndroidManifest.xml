@@ -42,9 +42,11 @@
         <activity
             android:name=".ManageRideActivity"
             android:exported="false" />
-
         <activity
             android:name=".EditRideActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AcceptRideActivity"
             android:exported="false" />
     </application>
 

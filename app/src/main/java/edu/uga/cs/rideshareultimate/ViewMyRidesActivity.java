@@ -2,11 +2,13 @@ package edu.uga.cs.rideshareultimate;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,6 +42,11 @@ public class ViewMyRidesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_rides);
 
         ridesListView = findViewById(R.id.ridesListView);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         ridesList = new ArrayList<>();
         rideIds = new ArrayList<>();
@@ -127,5 +134,19 @@ public class ViewMyRidesActivity extends AppCompatActivity {
                         ).show();
                     }
                 });
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Implement Back button listener method.
+        // This method may be used for other actions from the ActionBar menu, if provided in the layout.
+        int id = item.getItemId();
+
+        // android.R.id.home is the built-in designation of the back button widget.
+        if( id == android.R.id.home ) {
+            getOnBackPressedDispatcher().onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected( item );
     }
 }

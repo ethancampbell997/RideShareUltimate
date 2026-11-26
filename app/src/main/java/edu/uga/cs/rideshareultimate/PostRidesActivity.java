@@ -3,10 +3,12 @@ package edu.uga.cs.rideshareultimate;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,10 +49,16 @@ public class PostRidesActivity extends AppCompatActivity {
         etAvailableSeats = findViewById(R.id.editTextText4);
         etDescription = findViewById(R.id.editTextText5);
 
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
         Button btnPostRide = findViewById(R.id.button);
 
         btnPostRide.setOnClickListener(v -> postRide());
     }
+
 
     /**
      * Posts the ride to the Firebase realtime db
@@ -170,5 +178,24 @@ public class PostRidesActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                     }
                 });
+    }
+
+    /**
+     * The code that runs when the back button is pressed
+     * @param item The menu item that was selected.
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Implement Back button listener method.
+        // This method may be used for other actions from the ActionBar menu, if provided in the layout.
+        int id = item.getItemId();
+
+        // android.R.id.home is the built-in designation of the back button widget.
+        if( id == android.R.id.home ) {
+            getOnBackPressedDispatcher().onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected( item );
     }
 }
