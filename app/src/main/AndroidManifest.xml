@@ -48,6 +48,10 @@
         <activity
             android:name=".AcceptRideActivity"
             android:exported="false" />
+        <activity android:name=".ViewRideRequestsActivity"
+            android:exported="false" />
+        <activity android:name=".AcceptRideRequestActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
